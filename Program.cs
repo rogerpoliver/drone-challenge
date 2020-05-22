@@ -1,7 +1,7 @@
-﻿
+﻿using System;
+
 namespace Algorithm.Logic
 {
-    using System;
 
     public class Program
     {
@@ -37,9 +37,32 @@ namespace Algorithm.Logic
         /// <returns>String representando o ponto cartesiano após a execução dos comandos (X, Y)</returns>
         public static string Evaluate(string input)
         {
-            
-            // TODO: Este método é o ponto de entrada para a lógica.
-            return "(X, Y)";
+            int x = 0;
+            int y = 0;
+
+            char[] commandList = input.ToLower().ToCharArray();
+
+            foreach (var command in commandList)
+            {
+                if (command.Equals('n'))
+                {
+                    y++;
+                }
+                else if (command.Equals('s'))
+                {
+                    y--;
+                }
+                else if (command.Equals('l'))
+                {
+                    x++;
+                }
+                else if (command.Equals('o'))
+                {
+                    x--;
+                }
+            }
+
+            return $"({x}, {y})";
         }
     }
 }
