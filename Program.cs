@@ -1,5 +1,4 @@
 ﻿using System;
-
 namespace Algorithm.Logic
 {
 
@@ -37,11 +36,14 @@ namespace Algorithm.Logic
         /// <returns>String representando o ponto cartesiano após a execução dos comandos (X, Y)</returns>
         public static string Evaluate(string input)
         {
+            //Posição incial do plano
             int x = 0;
             int y = 0;
 
+            //Transforma o input de um Array de Chars
             char[] commandList = input.ToLower().ToCharArray();
 
+            //Verica cada item do Array de Chars e realiza o comando
             foreach (var command in commandList)
             {
                 if (command.Equals('n'))
@@ -59,7 +61,7 @@ namespace Algorithm.Logic
                 else if (command.Equals('o'))
                 {
                     x--;
-                }
+                }               
             }
 
             return $"({x}, {y})";
