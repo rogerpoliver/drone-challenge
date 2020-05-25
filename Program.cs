@@ -40,26 +40,34 @@ namespace Algorithm.Logic
         /// <returns>String representando o ponto cartesiano após a execução dos comandos (X, Y)</returns>
         public static string Evaluate(string input)
         {
+            //Variáveis do plano cartesiano
             int x = 0;
             int y = 0;
 
+            // Realiza validações no input
             if (IsNullOrEmpty(input)
                 || StartsWithNumbers(input)
                 || StartsWithBlankSpaces(input)
                 || HasInvalidCommands(input)
                 || HasInvalidCanceledCommands(input))
             {
+                //Retorna o resultado de erro
                 return "(999, 999)";
             }
 
+            //Remove os comandos cancelados
             input = RemoveCanceledCommands(input);
+            //Processa os comandos compostos e retorna uma lista de tuplas com os valores
             var commandList = ProcessCommands(input);
 
+            // Verifica se não há overflow na lista de comandos
             if (Overflow(commandList))
             {
+                //Retorna o resultado de erro
                 return "(999, 999)";
             }
 
+            // Executa os comandos para cada item da lista de comandos.
             foreach (var command in commandList)
             {
                 int c = 0;
@@ -73,9 +81,15 @@ namespace Algorithm.Logic
                 } while (c < command.Item2);
             }
 
+            //Retorna o resultado final
             return $"({x}, {y})";
         }
 
+        /// <summary>
+        /// Método que verifica se os comandos inicial com numerais
+        /// </summary>
+        /// <param name="input">Input de comandos</param>
+        /// <returns>Retorna true se os comandos inicial com numerais</returns>
         public static bool StartsWithNumbers(string input)
         {
             if (Regex.IsMatch(input, "^[0-9]"))
@@ -85,6 +99,11 @@ namespace Algorithm.Logic
             return false;
         }
 
+        /// <summary>
+        /// Método que verifica se existem comandos em branco
+        /// </summary>
+        /// <param name="input">Input de comandos</param>
+        /// <returns>Retorna true se existem comandos em branco</returns>
         public static bool StartsWithBlankSpaces(string input)
         {
             if (Regex.IsMatch(input, "^[ ]"))
@@ -94,6 +113,11 @@ namespace Algorithm.Logic
             return false;
         }
 
+        /// <summary>
+        /// Método que verifica se existem comandos vazios ou null
+        /// </summary>
+        /// <param name="input">Input de comandos</param>
+        /// <returns>Retorna true se existem comandos vazios ou null</returns>
         public static bool IsNullOrEmpty(string input)
         {
             if (string.IsNullOrEmpty(input))
@@ -103,6 +127,11 @@ namespace Algorithm.Logic
             return false;
         }
 
+        /// <summary>
+        /// Método que verifica se existem comandos inválidos
+        /// </summary>
+        /// <param name="input">Input de comandos</param>
+        /// <returns>Retorna true se existem comandos inválidos</returns>
         public static bool HasInvalidCommands(string input)
         {
             if (Regex.IsMatch(input, "[^NSLOX0-9]"))
@@ -111,6 +140,12 @@ namespace Algorithm.Logic
             }
             return false;
         }
+
+        /// <summary>
+        /// Método que verifica se existem comandos de cancelamento inválidos
+        /// </summary>
+        /// <param name="input">Input de comandos</param>
+        /// <returns>Retorna true se existem comandos inválidos</returns>
         public static bool HasInvalidCanceledCommands(string input)
         {
             if (Regex.IsMatch(input, "[X][0-9]{1,}"))
@@ -120,6 +155,11 @@ namespace Algorithm.Logic
             return false;
         }
 
+        /// <summary>
+        /// Método que remove os comandos que foram cancelados
+        /// </summary>
+        /// <param name="input">Input de comandos</param>
+        /// <returns>Retorna o input sem os comandos que foram cancelados</returns>
         public static string RemoveCanceledCommands(string input)
         {
             string regexPattern = "[NSLO][0-9]{0,}[X]";
@@ -163,6 +203,11 @@ namespace Algorithm.Logic
             return commands;
         }
 
+        /// <summary>
+        /// Método que verifica que a soma de algum comando gera overflow
+        /// </summary>
+        /// <param name="commands">Lista de tuplas com comandos</param>
+        /// <returns>Retorna true se for overflow</returns>
         public static bool Overflow(List<Tuple<string, int>> commands)
         {
             List<char> directions = new List<char> { 'N', 'S', 'L', 'O' };
