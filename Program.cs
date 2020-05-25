@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
 namespace Algorithm.Logic
 {
 
@@ -7,7 +11,7 @@ namespace Algorithm.Logic
         /// <summary>
         /// PROBLEMA:
         /// 
-        /// Implementar um algoritmo para o controle de posição de um drone emum plano cartesiano (X, Y).
+        /// Implementar um algoritmo para o controle de posição de um drone num plano cartesiano (X, Y).
         /// 
         /// O ponto inicial do drone é "(0, 0)" para cada execução do método Evaluate ao ser executado cada teste unitário.
         /// 
@@ -21,7 +25,7 @@ namespace Algorithm.Logic
         /// 
         /// Além disso, um número pode estar presente após o caracter da operação, representando o "passo" que a operação deve acumular.
 		/// Este número deve estar compreendido entre 1 e 2147483647.
-		/// Deve-se observar que a operação 'X' não suporta opção de "passo" e deve ser considerado inválido. Uma string de entrada "NNX2" deve ser considerada inválida.
+		/// Deve-se observar que a operação "X" não suporta opção de "passo" e deve ser considerado inválido. Uma string de entrada "NNX2" deve ser considerada inválida.
         /// Uma string de entrada "N123LSX" irá resultar em uma posição final "(1, 123)" pois a string pode ser simplificada para "N123L"
         /// Uma string de entrada "NLS3X" irá resultar em uma posição final "(1, 1)" pois a string pode ser siplificada para "NL".
         /// 
@@ -35,36 +39,78 @@ namespace Algorithm.Logic
         /// <param name="input">String no padrão "N1N2S3S4L5L6O7O8X"</param>
         /// <returns>String representando o ponto cartesiano após a execução dos comandos (X, Y)</returns>
         public static string Evaluate(string input)
-        {
-            //Posição incial do plano
-            int x = 0;
-            int y = 0;
+        {          
 
-            //Transforma o input de um Array de Chars
-            char[] commandList = input.ToLower().ToCharArray();
-
-            //Verica cada item do Array de Chars e realiza o comando
-            foreach (var command in commandList)
+            if(StartsWithNumbers(input) || StartsWithBlankSpaces(input) || IsNullOrEmpty(input))
             {
-                if (command.Equals('n'))
-                {
-                    y++;
-                }
-                else if (command.Equals('s'))
-                {
-                    y--;
-                }
-                else if (command.Equals('l'))
-                {
-                    x++;
-                }
-                else if (command.Equals('o'))
-                {
-                    x--;
-                }               
+                return "(999, 999)";
             }
 
-            return $"({x}, {y})";
+            input = RemoveCanceledCommands(input);
+
+            var comandos = ProcessCommands(input);
+
+            //Verica cada item do Array de Chars e realiza o comando
+        
+
+            return $"(x, y)";
         }
+
+        public static bool StartsWithNumbers(string input)
+        {
+            if(Regex.IsMatch(input, "^[0-9]"))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool StartsWithBlankSpaces(string input)
+        {
+            if (Regex.IsMatch(input, "^[ ]"))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool IsNullOrEmpty(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static string RemoveCanceledCommands(string input)
+        {
+            string regexPattern = "[NSLO][0-9]{0,}[X]";
+            input = Regex.Replace(input, regexPattern, "");
+            return input;
+        }
+
+        public static string ProcessCommands(string input)
+        {
+            string newInput = input;
+            string regexPattern = "[NSLO][0-9]{0,}";
+
+            Dictionary<string, int> commands = new Dictionary<string, int>();
+
+            while (Regex.IsMatch(newInput, regexPattern))
+            {              
+                Match commandString = Regex.Match(newInput, regexPattern);
+
+                var dicKey = Regex.Match(commandString.Value, "[NSLO]");
+                var dicValue = Regex.Match(commandString.Value, "[0-9]{1,}");
+
+                commands.Add(dicKey.ToString(), Convert.ToInt32(dicValue));
+            }
+
+            return newInput;
+
+        }
+
+
     }
 }
