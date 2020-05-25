@@ -39,26 +39,46 @@ namespace Algorithm.Logic
         /// <param name="input">String no padrão "N1N2S3S4L5L6O7O8X"</param>
         /// <returns>String representando o ponto cartesiano após a execução dos comandos (X, Y)</returns>
         public static string Evaluate(string input)
-        {          
+        {
+            int x = 0;
+            int y = 0;
 
-            if(StartsWithNumbers(input) || StartsWithBlankSpaces(input) || IsNullOrEmpty(input))
+            if (IsNullOrEmpty(input)
+                || StartsWithNumbers(input)
+                || StartsWithBlankSpaces(input)
+                || HasInvalidCommands(input)
+                || HasInvalidCanceledCommands(input))
             {
                 return "(999, 999)";
             }
 
             input = RemoveCanceledCommands(input);
+            var commandList = ProcessCommands(input);
 
-            var comandos = ProcessCommands(input);
+            if (Overflow(commandList))
+            {
+                return "(999, 999)";
+            }
 
-            //Verica cada item do Array de Chars e realiza o comando
-        
+            foreach (var command in commandList)
+            {
+                int c = 0;
+                do
+                {
+                    if (command.Item1.Equals("N")) y++;
+                    if (command.Item1.Equals("S")) y--;
+                    if (command.Item1.Equals("L")) x++;
+                    if (command.Item1.Equals("O")) x--;
+                    c++;
+                } while (c < command.Item2);
+            }
 
-            return $"(x, y)";
+            return $"({x}, {y})";
         }
 
         public static bool StartsWithNumbers(string input)
         {
-            if(Regex.IsMatch(input, "^[0-9]"))
+            if (Regex.IsMatch(input, "^[0-9]"))
             {
                 return true;
             }
@@ -83,34 +103,80 @@ namespace Algorithm.Logic
             return false;
         }
 
+        public static bool HasInvalidCommands(string input)
+        {
+            if (Regex.IsMatch(input, "[^NSLOX0-9]"))
+            {
+                return true;
+            }
+            return false;
+        }
+        public static bool HasInvalidCanceledCommands(string input)
+        {
+            if (Regex.IsMatch(input, "[X][0-9]{1,}"))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public static string RemoveCanceledCommands(string input)
         {
             string regexPattern = "[NSLO][0-9]{0,}[X]";
-            input = Regex.Replace(input, regexPattern, "");
+            while (Regex.IsMatch(input, regexPattern))
+            {
+                input = Regex.Replace(input, regexPattern, "");
+            }
             return input;
         }
 
-        public static string ProcessCommands(string input)
+        /// <summary>
+        /// Método que processa a string input e retorna os comandos do drone através de uma lista de tuplas
+        /// </summary>
+        /// <param name="input">String de comandos</param>
+        /// <returns>Retorna uma Lista de Tuplas</returns>
+        public static List<Tuple<string, int>> ProcessCommands(string input)
         {
-            string newInput = input;
-            string regexPattern = "[NSLO][0-9]{0,}";
+            //Transforma a String Input em uma Lista com comandos compostos
+            MatchCollection matchList = Regex.Matches(input, "[NSLO][0-9]{0,}");
+            var list = matchList.Cast<Match>().Select(match => match.Value).ToList();
 
-            Dictionary<string, int> commands = new Dictionary<string, int>();
+            //Instancia o dicionario onde serão atribuídos os comandos
+            var commands = new List<Tuple<string, int>>();
 
-            while (Regex.IsMatch(newInput, regexPattern))
-            {              
-                Match commandString = Regex.Match(newInput, regexPattern);
+            //Para cada execução, transforma o comando composto em uma chave e um valor
+            foreach (var item in list)
+            {
+                //Coleta a direção e quantidade de comandos através de Regex
+                Match matchDirection = Regex.Match(item, "[NSLO]");
+                Match matchCount = Regex.Match(item, "[0-9]{1,}");
 
-                var dicKey = Regex.Match(commandString.Value, "[NSLO]");
-                var dicValue = Regex.Match(commandString.Value, "[0-9]{1,}");
+                //Convete os comandos para String e Int.
+                //Utiliza TryParse para converter a quantidade, se não existir, define como zero.
+                int commandValue;
+                string commandKey = matchDirection.ToString();
+                int.TryParse(matchCount.Value, out commandValue);
 
-                commands.Add(dicKey.ToString(), Convert.ToInt32(dicValue));
+                //Inclui os comandos na lista de tuplas
+                commands.Add(Tuple.Create(commandKey, commandValue));
             }
-
-            return newInput;
-
+            return commands;
         }
 
+        public static bool Overflow(List<Tuple<string, int>> commands)
+        {
+            List<char> directions = new List<char> { 'N', 'S', 'L', 'O' };
 
+            foreach (var direction in directions)
+            {
+                var overflow = commands.Where(c => c.Item1 == $"{direction}").Sum(x => x.Item2);
+
+                if(overflow >= 2147483647)
+                {
+                    return true;                    
+                }              
+            }         
+            return false;
+        }
     }
 }
