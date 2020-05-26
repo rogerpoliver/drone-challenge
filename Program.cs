@@ -40,6 +40,7 @@ namespace Algorithm.Logic
         /// <returns>String representando o ponto cartesiano após a execução dos comandos (X, Y)</returns>
         public static string Evaluate(string input)
         {
+            
             //Variáveis do plano cartesiano
             int x = 0;
             int y = 0;
@@ -48,12 +49,17 @@ namespace Algorithm.Logic
             if (IsNullOrEmpty(input)
                 || StartsWithNumbers(input)
                 || StartsWithBlankSpaces(input)
+                || StartsWithCanceledCommand(input)
                 || HasInvalidCommands(input)
-                || HasInvalidCanceledCommands(input))
+                || HasInvalidCanceledCommands(input)
+                || HasMoreXThanCommands(input))
             {
                 //Retorna o resultado de erro
                 return "(999, 999)";
             }
+
+            //Garante que o Input String sempre será maiusculo
+            input = input.ToUpper();
 
             //Remove os comandos cancelados
             input = RemoveCanceledCommands(input);
@@ -90,7 +96,7 @@ namespace Algorithm.Logic
         /// </summary>
         /// <param name="input">Input de comandos</param>
         /// <returns>Retorna true se os comandos inicial com numerais</returns>
-        public static bool StartsWithNumbers(string input)
+        private static bool StartsWithNumbers(string input)
         {
             if (Regex.IsMatch(input, "^[0-9]"))
             {
@@ -104,7 +110,7 @@ namespace Algorithm.Logic
         /// </summary>
         /// <param name="input">Input de comandos</param>
         /// <returns>Retorna true se existem comandos em branco</returns>
-        public static bool StartsWithBlankSpaces(string input)
+        private static bool StartsWithBlankSpaces(string input)
         {
             if (Regex.IsMatch(input, "^[ ]"))
             {
@@ -118,7 +124,7 @@ namespace Algorithm.Logic
         /// </summary>
         /// <param name="input">Input de comandos</param>
         /// <returns>Retorna true se existem comandos vazios ou null</returns>
-        public static bool IsNullOrEmpty(string input)
+        private static bool IsNullOrEmpty(string input)
         {
             if (string.IsNullOrEmpty(input))
             {
@@ -132,9 +138,9 @@ namespace Algorithm.Logic
         /// </summary>
         /// <param name="input">Input de comandos</param>
         /// <returns>Retorna true se existem comandos inválidos</returns>
-        public static bool HasInvalidCommands(string input)
+        private static bool HasInvalidCommands(string input)
         {
-            if (Regex.IsMatch(input, "[^NSLOX0-9]"))
+            if (Regex.IsMatch(input, "[^NSLOX0-9]", RegexOptions.IgnoreCase))
             {
                 return true;
             }
@@ -146,9 +152,23 @@ namespace Algorithm.Logic
         /// </summary>
         /// <param name="input">Input de comandos</param>
         /// <returns>Retorna true se existem comandos inválidos</returns>
-        public static bool HasInvalidCanceledCommands(string input)
+        private static bool HasInvalidCanceledCommands(string input)
         {
-            if (Regex.IsMatch(input, "[X][0-9]{1,}"))
+            if (Regex.IsMatch(input, "[X][0-9]{1,}", RegexOptions.IgnoreCase))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Método que verifica o primeiro comando é um comando para cancelamento
+        /// </summary>
+        /// <param name="input">Input de comandos</param>
+        /// <returns>Retorna true se existe um comando de cancelamento no inicio do input</returns>
+        private static bool StartsWithCanceledCommand(string input)
+        {
+            if(Regex.IsMatch(input, "^[X]", RegexOptions.IgnoreCase))
             {
                 return true;
             }
@@ -160,10 +180,10 @@ namespace Algorithm.Logic
         /// </summary>
         /// <param name="input">Input de comandos</param>
         /// <returns>Retorna o input sem os comandos que foram cancelados</returns>
-        public static string RemoveCanceledCommands(string input)
+        private static string RemoveCanceledCommands(string input)
         {
             string regexPattern = "[NSLO][0-9]{0,}[X]";
-            while (Regex.IsMatch(input, regexPattern))
+            while (Regex.IsMatch(input, regexPattern, RegexOptions.IgnoreCase))
             {
                 input = Regex.Replace(input, regexPattern, "");
             }
@@ -175,10 +195,10 @@ namespace Algorithm.Logic
         /// </summary>
         /// <param name="input">String de comandos</param>
         /// <returns>Retorna uma Lista de Tuplas</returns>
-        public static List<Tuple<string, int>> ProcessCommands(string input)
+        private static List<Tuple<string, int>> ProcessCommands(string input)
         {
             //Transforma a String Input em uma Lista com comandos compostos
-            MatchCollection matchList = Regex.Matches(input, "[NSLO][0-9]{0,}");
+            MatchCollection matchList = Regex.Matches(input, "[NSLO][0-9]{0,}", RegexOptions.IgnoreCase);
             var list = matchList.Cast<Match>().Select(match => match.Value).ToList();
 
             //Instancia o dicionario onde serão atribuídos os comandos
@@ -188,8 +208,8 @@ namespace Algorithm.Logic
             foreach (var item in list)
             {
                 //Coleta a direção e quantidade de comandos através de Regex
-                Match matchDirection = Regex.Match(item, "[NSLO]");
-                Match matchCount = Regex.Match(item, "[0-9]{1,}");
+                Match matchDirection = Regex.Match(item, "[NSLO]", RegexOptions.IgnoreCase);
+                Match matchCount = Regex.Match(item, "[0-9]{1,}", RegexOptions.IgnoreCase);
 
                 //Convete os comandos para String e Int.
                 //Utiliza TryParse para converter a quantidade, se não existir, define como zero.
@@ -208,7 +228,7 @@ namespace Algorithm.Logic
         /// </summary>
         /// <param name="commands">Lista de tuplas com comandos</param>
         /// <returns>Retorna true se for overflow</returns>
-        public static bool Overflow(List<Tuple<string, int>> commands)
+        private static bool Overflow(List<Tuple<string, int>> commands)
         {
             List<char> directions = new List<char> { 'N', 'S', 'L', 'O' };
 
@@ -221,6 +241,18 @@ namespace Algorithm.Logic
                     return true;                    
                 }              
             }         
+            return false;
+        }
+
+        private static bool HasMoreXThanCommands(string input)
+        {
+            MatchCollection xMatches = Regex.Matches(input, "[X]", RegexOptions.IgnoreCase);
+            MatchCollection nsloMatches = Regex.Matches(input, "[NSLO]", RegexOptions.IgnoreCase);
+
+            if(xMatches.Count > nsloMatches.Count)
+            {
+                return true;
+            }
             return false;
         }
     }
