@@ -129,5 +129,41 @@ namespace Algorithm.Logic.Tests
                 Enumerable.Repeat('L', 1000)).Concat(
                 Enumerable.Repeat('O', 500)).ToArray())));
         }
+
+        [TestMethod]
+        public void Input_LowerCase()
+        {
+            Assert.AreEqual("(1, 123)", Program.Evaluate("n123lsx"));
+        }
+
+        [TestMethod]
+        public void Input_UpperCase()
+        {
+            Assert.AreEqual("(1, 123)", Program.Evaluate("N123LSX"));
+        }
+
+        [TestMethod]
+        public void Input_UpperAndLowerCase()
+        {
+            Assert.AreEqual("(1, 123)", Program.Evaluate("n123LsX"));
+        }
+
+        [TestMethod]
+        public void Input_AllCanceled()
+        {
+            Assert.AreEqual("(0, 0)", Program.Evaluate("NXSXLXLX"));
+        }
+
+        [TestMethod]
+        public void Input_NSXXX()
+        {
+            Assert.AreEqual("(999, 999)", Program.Evaluate("NSXXXX"));
+        }
+
+        [TestMethod]
+        public void Input_XXXXX()
+        {
+            Assert.AreEqual("(999, 999)", Program.Evaluate("XXXXX"));
+        }
     }
 }
