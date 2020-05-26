@@ -244,6 +244,11 @@ namespace Algorithm.Logic
             return false;
         }
 
+        /// <summary>
+        /// Método que valida se o input possui mais comandos de cancelamento do que direção
+        /// </summary>
+        /// <param name="input">Input de comandos</param>
+        /// <returns>Retorna true se existem mais cancelamentos que comandos</returns>
         private static bool HasMoreXThanCommands(string input)
         {
             MatchCollection xMatches = Regex.Matches(input, "[X]", RegexOptions.IgnoreCase);
