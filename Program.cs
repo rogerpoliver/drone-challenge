@@ -92,10 +92,10 @@ namespace Algorithm.Logic
         }
 
         /// <summary>
-        /// Método que verifica se os comandos inicial com numerais
+        /// Método que verifica se os comandos iniciam com numerais
         /// </summary>
         /// <param name="input">Input de comandos</param>
-        /// <returns>Retorna true se os comandos inicial com numerais</returns>
+        /// <returns>Retorna true se os comandos iniciam com numerais</returns>
         private static bool StartsWithNumbers(string input)
         {
             if (Regex.IsMatch(input, "^[0-9]"))
